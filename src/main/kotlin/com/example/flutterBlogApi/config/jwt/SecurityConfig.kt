@@ -24,6 +24,7 @@ class SecurityConfig(
             .authorizeRequests()
             .antMatchers("/api/v1/users/signup").permitAll()
             .antMatchers("/api/v1/users/signin").permitAll()
+            .antMatchers("/api/v1/users/refresh").permitAll()
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)

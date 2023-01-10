@@ -18,5 +18,14 @@ data class SignInRequest(
 data class SignInResponse (
     val email: String,
     val username: String,
-    val token : String,
+    val accessToken : String,
+    val refreshToken: String,
+)
+
+data class RefreshTokenRequest (
+    val refreshToken: String?,
+)
+
+data class RefreshTokenResponse (
+    val accessToken: String?,
 )

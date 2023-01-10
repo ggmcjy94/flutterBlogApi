@@ -1,8 +1,7 @@
 package com.example.flutterBlogApi.controller
 
-import com.example.flutterBlogApi.model.SignInRequest
-import com.example.flutterBlogApi.model.SignInResponse
-import com.example.flutterBlogApi.model.SignUpRequest
+import com.example.flutterBlogApi.model.*
+import com.example.flutterBlogApi.service.AuthService
 import com.example.flutterBlogApi.service.UserService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService,
+    private val authService : AuthService,
 ) {
 
     @PostMapping("/signup")
@@ -23,6 +23,11 @@ class UserController(
     @PostMapping("/signin")
     fun signIn(@RequestBody request: SignInRequest) : SignInResponse {
         return userService.signIn(request)
+    }
+
+    @PostMapping("/refresh")
+    fun refresh(@RequestBody request: RefreshTokenRequest) : RefreshTokenResponse  {
+        return authService.reGeneratedAccessToken(request.refreshToken)
     }
 
 }

@@ -3,23 +3,26 @@ package com.example.flutterBlogApi.service
 import com.example.flutterBlogApi.config.jwt.JWTProperties
 import com.example.flutterBlogApi.config.jwt.JwtTokenProvider
 import com.example.flutterBlogApi.domain.User
+import com.example.flutterBlogApi.domain.auth.AuthEntity
 import com.example.flutterBlogApi.exception.PasswordNotMatchedException
 import com.example.flutterBlogApi.exception.UserExistsException
 import com.example.flutterBlogApi.exception.UserNotFoundException
 import com.example.flutterBlogApi.model.SignInRequest
 import com.example.flutterBlogApi.model.SignInResponse
 import com.example.flutterBlogApi.model.SignUpRequest
+import com.example.flutterBlogApi.repository.AuthRepository
 import com.example.flutterBlogApi.repository.UserRepository
 import com.example.flutterBlogApi.utils.BCryptUtils
-import jdk.jshell.spi.ExecutionControl.UserException
 import org.springframework.stereotype.Service
 
 @Service
 class UserService (
     private val userRepository: UserRepository,
-    private val jwtProperties: JWTProperties,
+    private val authRepository: AuthRepository,
     private val jwtTokenProvider: JwtTokenProvider,
 ){
+
+
 
 
     fun signUp(signUpRequest: SignUpRequest) {
@@ -42,11 +45,15 @@ class UserService (
             if (!verified) {
                 throw PasswordNotMatchedException()
             }
-            val token =  jwtTokenProvider.createAccessToken()
+            val token =  jwtTokenProvider.createAccessToken(email)
+            val createRefreshToken = jwtTokenProvider.createRefreshToken(email)
+            println("re token :  $createRefreshToken")
+            authRepository.save(AuthEntity(refreshToken = createRefreshToken , keyEmail = email))
             SignInResponse (
                 email = email,
                 username= username,
-                token = token
+                accessToken = token,
+                refreshToken = createRefreshToken,
             )
         }
     }
