@@ -54,17 +54,17 @@ class JwtTokenProvider (
     fun isValidRefreshToken (token : String) : Boolean {
         return try {
             val accessClaims = parseJwtToken(token)
-            System.out.println("Access expireTime: " + accessClaims.getExpiration());
+            System.out.println("Access expireTime: " + accessClaims.getExpiration())
             System.out.println("Access userId: " + accessClaims.get("userId"));
             true
         } catch (exception : ExpiredJwtException) {
-            System.out.println("Token Expired UserID : " + exception.getClaims().getSubject());
+            System.out.println("Token Expired UserID : " + exception.getClaims().getSubject())
             false
         } catch (exception : JwtException) {
-            System.out.println("Token Tampered");
+            System.out.println("Token Tampered")
             false
         } catch (exception : NullPointerException) {
-            System.out.println("Token is null");
+            System.out.println("Token is null")
             false
         }
     }

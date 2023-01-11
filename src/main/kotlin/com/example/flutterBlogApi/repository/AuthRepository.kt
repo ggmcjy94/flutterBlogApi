@@ -6,4 +6,5 @@ import java.util.Optional
 
 interface AuthRepository  : JpaRepository<AuthEntity, Long> {
     fun findByRefreshToken(token: String): AuthEntity?
+    fun findByKeyEmail(email: String) : AuthEntity?
 }

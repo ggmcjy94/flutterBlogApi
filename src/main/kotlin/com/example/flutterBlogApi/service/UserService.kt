@@ -14,6 +14,7 @@ import com.example.flutterBlogApi.repository.AuthRepository
 import com.example.flutterBlogApi.repository.UserRepository
 import com.example.flutterBlogApi.utils.BCryptUtils
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService (
@@ -25,6 +26,7 @@ class UserService (
 
 
 
+    @Transactional
     fun signUp(signUpRequest: SignUpRequest) {
         with(signUpRequest) {
             userRepository.findByEmail(email) ?. let {
@@ -39,6 +41,7 @@ class UserService (
         }
     }
 
+    @Transactional
     fun signIn(request: SignInRequest): SignInResponse {
         return with(userRepository.findByEmail(request.email) ?: throw UserNotFoundException()) {
             val verified = BCryptUtils.verify(request.password, password)
@@ -47,8 +50,15 @@ class UserService (
             }
             val token =  jwtTokenProvider.createAccessToken(email)
             val createRefreshToken = jwtTokenProvider.createRefreshToken(email)
+
             println("re token :  $createRefreshToken")
-            authRepository.save(AuthEntity(refreshToken = createRefreshToken , keyEmail = email))
+            val auth = authRepository.findByKeyEmail(email)
+            if (auth != null) {
+                auth.updateRefreshToken(createRefreshToken);
+            } else {
+                authRepository.save(AuthEntity(refreshToken = createRefreshToken , keyEmail = email))
+            }
+
             SignInResponse (
                 email = email,
                 username= username,

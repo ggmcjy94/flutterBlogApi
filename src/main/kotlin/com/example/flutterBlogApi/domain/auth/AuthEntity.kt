@@ -11,10 +11,14 @@ class AuthEntity (
     val id : Long? = null,
 
     @Column(nullable = false)
-    val refreshToken : String,
+    var refreshToken : String,
 
     @Column(nullable = false)
     val keyEmail : String,
 //    val userAgent : String, 기기 마다 refresh token 같이 저장
 ) {
+
+    fun updateRefreshToken(createRefreshToken: String) {
+        this.refreshToken = createRefreshToken
+    }
 }
