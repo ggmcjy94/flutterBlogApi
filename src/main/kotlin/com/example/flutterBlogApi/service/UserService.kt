@@ -5,6 +5,7 @@ import com.example.flutterBlogApi.config.jwt.JwtTokenProvider
 import com.example.flutterBlogApi.domain.User
 import com.example.flutterBlogApi.domain.auth.AuthEntity
 import com.example.flutterBlogApi.exception.PasswordNotMatchedException
+import com.example.flutterBlogApi.exception.RetryLoginException
 import com.example.flutterBlogApi.exception.UserExistsException
 import com.example.flutterBlogApi.exception.UserNotFoundException
 import com.example.flutterBlogApi.model.SignInRequest
@@ -13,6 +14,8 @@ import com.example.flutterBlogApi.model.SignUpRequest
 import com.example.flutterBlogApi.repository.AuthRepository
 import com.example.flutterBlogApi.repository.UserRepository
 import com.example.flutterBlogApi.utils.BCryptUtils
+import org.slf4j.LoggerFactory
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,6 +28,7 @@ class UserService (
 
 
 
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @Transactional
     fun signUp(signUpRequest: SignUpRequest) {
@@ -51,10 +55,12 @@ class UserService (
             val token =  jwtTokenProvider.createAccessToken(email)
             val createRefreshToken = jwtTokenProvider.createRefreshToken()
 
-            println("re token :  $createRefreshToken")
+            log.info("re token :  $createRefreshToken")
             val auth = authRepository.findByKeyEmail(email)
+
             if (auth != null) {
-                auth.updateRefreshToken(createRefreshToken);
+                log.info("update refresh token : ${auth.refreshToken} , ${auth.keyEmail}")
+                auth.updateRefreshToken(createRefreshToken)
             } else {
                 authRepository.save(AuthEntity(refreshToken = createRefreshToken , keyEmail = email))
             }
@@ -66,5 +72,15 @@ class UserService (
                 refreshToken = createRefreshToken,
             )
         }
+    }
+
+
+    @Transactional
+    fun logout() {
+        val authentication = SecurityContextHolder.getContext().authentication
+        log.info("authentication: ${authentication.name}")
+        //어차피 토큰 만료가 되나 직접 로그아웃 하나 토큰 삭제 해줘야 함
+        val auth = authRepository.findByKeyEmail(authentication.name) ?: throw RetryLoginException()
+        authRepository.deleteById(auth.id!!)
     }
 }

@@ -16,4 +16,8 @@ interface AuthRepository  : JpaRepository<AuthEntity, Long> {
     @Modifying
     @Query("delete from AuthEntity a where a.refreshToken = :token")
     fun deleteByRefreshToken(@Param("token") refreshToken: String?)
+
+    @Modifying
+    @Query("delete from AuthEntity a where a.keyEmail = :email")
+    fun deleteByKeyEmail(@Param("email") email: String?)
 }

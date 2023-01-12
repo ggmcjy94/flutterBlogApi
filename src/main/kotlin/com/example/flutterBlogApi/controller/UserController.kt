@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -23,6 +24,11 @@ class UserController(
     @PostMapping("/signin")
     fun signIn(@RequestBody request: SignInRequest) : SignInResponse {
         return userService.signIn(request)
+    }
+
+    @PostMapping("/logout")
+    fun logout() {
+        return userService.logout();
     }
 
     @PostMapping("/refresh")

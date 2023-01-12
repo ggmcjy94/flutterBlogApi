@@ -23,3 +23,7 @@ data class InvalidJwtTokenException(
 data class PasswordNotMatchedException(
     override val message: String = "패스워드가 잘못되었습니다"
 ) : ServerException(400, message)
+
+data class RetryLoginException(
+    override val message: String = "로그인을 다시해주시기 바랍니다."
+) : ServerException(400, message)
