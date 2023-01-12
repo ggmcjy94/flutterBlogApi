@@ -49,7 +49,7 @@ class UserService (
                 throw PasswordNotMatchedException()
             }
             val token =  jwtTokenProvider.createAccessToken(email)
-            val createRefreshToken = jwtTokenProvider.createRefreshToken(email)
+            val createRefreshToken = jwtTokenProvider.createRefreshToken()
 
             println("re token :  $createRefreshToken")
             val auth = authRepository.findByKeyEmail(email)

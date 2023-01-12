@@ -1,7 +1,9 @@
 package com.example.flutterBlogApi.config.jwt
 
 import com.example.flutterBlogApi.config.CustomUserDetailService
+import com.example.flutterBlogApi.exception.InvalidJwtTokenException
 import io.jsonwebtoken.*
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -17,19 +19,15 @@ class JwtTokenProvider (
 ) {
 
 
-    private var secretKey = jwtProperties.secret
-
+    val log: Logger = LoggerFactory.getLogger(javaClass)
+    var secretKey = jwtProperties.secret
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct
     protected fun init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
     }
-
-
-    val log = LoggerFactory.getLogger(javaClass)
-
-
     fun createAccessToken(email: String): String {
+
         val claims = Jwts.claims().setSubject(email)
         val now = Date()
         return Jwts.builder()
@@ -40,36 +38,30 @@ class JwtTokenProvider (
             .compact()
     }
 
-    fun createRefreshToken(email: String): String {
-        val claims = Jwts.claims().setSubject(email)
+    fun createRefreshToken(): String {
+        // 굳이 refresh 에다가 회원 정보를 담을 필요 없음 인가 하면 안되니깐
+//        val claims = Jwts.claims().setSubject(email)
         val now = Date()
         return Jwts.builder()
-            .setClaims(claims)
             .setIssuedAt(now)
             .setExpiration(Date(now.time + jwtProperties.reExpiresTime * 1000))
             .signWith(SignatureAlgorithm.HS512, secretKey)
             .compact()
     }
 
-    fun isValidRefreshToken (token : String) : Boolean {
+    fun isValidRefreshToken (token : String)  : Boolean {
         return try {
-            val accessClaims = parseJwtToken(token)
-            System.out.println("Access expireTime: " + accessClaims.getExpiration())
-            System.out.println("Access userId: " + accessClaims.get("userId"));
-            true
-        } catch (exception : ExpiredJwtException) {
-            System.out.println("Token Expired UserID : " + exception.getClaims().getSubject())
+            return !parseJwtToken(token).expiration.before(Date());
+        } catch (e : ExpiredJwtException) {
+            throw e
+        } catch (e : JwtException) {
+            log.info("Token Tampered $e")
             false
-        } catch (exception : JwtException) {
-            System.out.println("Token Tampered")
-            false
-        } catch (exception : NullPointerException) {
-            System.out.println("Token is null")
+        } catch (e : NullPointerException) {
+            log.info("Token is null")
             false
         }
     }
-
-
 
     fun validateToken(token : String) : Boolean {
         return try {
@@ -97,9 +89,11 @@ class JwtTokenProvider (
 
     // 토큰에서 회원 정보 추출
     fun getUserPk(token: String): String? {
-        val claims = parseJwtToken(token)
-        println("claims:  $claims")
-        return claims["sub"] as String
+        try {
+            return parseJwtToken(token)["sub"] as String;
+        } catch (e: Exception) {
+            throw InvalidJwtTokenException()
+        }
     }
 
     fun parseJwtToken(token:String) : Claims {
