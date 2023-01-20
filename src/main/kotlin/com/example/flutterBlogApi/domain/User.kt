@@ -9,12 +9,16 @@ class User  (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id : Long? = null,
-    @Column
+
+    @Column(unique = true)
     val email: String,
     @Column
     val password: String,
     @Column
     val username : String,
+    @Column
+    val tel : String,
+
 ) : BaseEntity() {
 
 }

@@ -40,6 +40,7 @@ class UserService (
                 email = email,
                 password = BCryptUtils.hash(password),
                 username = username,
+                tel = tel,
             )
             userRepository.save(user)
         }

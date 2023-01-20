@@ -18,14 +18,15 @@ class JwtTokenProvider (
     private val customUserDetailService: CustomUserDetailService
 ) {
 
-
     val log: Logger = LoggerFactory.getLogger(javaClass)
     var secretKey = jwtProperties.secret
+
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct
     protected fun init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.toByteArray())
     }
+
     fun createAccessToken(email: String): String {
 
         val claims = Jwts.claims().setSubject(email)
@@ -51,7 +52,7 @@ class JwtTokenProvider (
 
     fun isValidRefreshToken (token : String)  : Boolean {
         return try {
-            return !parseJwtToken(token).expiration.before(Date());
+            !parseJwtToken(token).expiration.before(Date());
         } catch (e : ExpiredJwtException) {
             throw e
         } catch (e : JwtException) {
